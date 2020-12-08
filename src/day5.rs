@@ -157,15 +157,12 @@ pub fn part2(input: &str) {
     let mut seat_ids = input.lines().map(get_seat_id).collect::<Vec<_>>();
     seat_ids.sort();
 
-    for window in seat_ids.windows(2) {
-        let prev_seat_id = window[0];
-        let current_seat_id = window[1];
-        if prev_seat_id + 2 == current_seat_id {
-            // a gap will mean the previous seat id was 2 away
-            println!("Seat id = {}", current_seat_id - 1);
-            return;
-        }
-    }
+    let seat_id = seat_ids
+        .windows(2)
+        .find(|window| window[0] + 2 == window[1])
+        .map(|window| window[1] - 1);
+
+    println!("Seat id = {:?}", seat_id);
 }
 
 #[cfg(test)]
