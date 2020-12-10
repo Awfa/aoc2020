@@ -27,8 +27,13 @@ fn main() -> Result<(), Error> {
     // day5::part1(&input);
     // day5::part2(&input);
 
-    let input = std::fs::read_to_string("inputs/day06.txt")?;
-    day6::part1(&input);
-    day6::part2(&input);
+    // let input = std::fs::read_to_string("inputs/day06.txt")?;
+    // day6::part1(&input);
+    // day6::part2(&input);
+
+    let input = std::fs::read_to_string("inputs/day07.txt")?;
+    let input = day7::input(&input).unwrap();
+    day7::part1(&input);
+    day7::part2(&input);
     Ok(())
 }
