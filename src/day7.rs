@@ -11,15 +11,17 @@ use nom::{
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::Walker;
 
+type CountType = u64;
+
 #[derive(Debug)]
 struct Insides<'a> {
-    count: usize,
+    count: CountType,
     color: &'a str,
 }
 
 fn get_insides(input: &str) -> nom::IResult<&str, Insides> {
     let (rest, number) = nom::character::complete::digit1(input)?;
-    let number = usize::from_str_radix(number, 10).unwrap();
+    let number = CountType::from_str_radix(number, 10).unwrap();
 
     let (rest, color) = preceded(
         multispace1,
@@ -41,7 +43,7 @@ fn get_color(input: &str) -> nom::IResult<&str, &str> {
     Ok((rest, color))
 }
 
-pub fn input(input: &str) -> Result<DiGraphMap<&str, usize>, anyhow::Error> {
+pub fn input(input: &str) -> Result<DiGraphMap<&str, CountType>, anyhow::Error> {
     let mut graph = DiGraphMap::new();
 
     for line in input.lines() {
@@ -59,18 +61,18 @@ pub fn input(input: &str) -> Result<DiGraphMap<&str, usize>, anyhow::Error> {
     Ok(graph)
 }
 
-pub fn part1(input: &DiGraphMap<&str, usize>) {
+pub fn part1(input: &DiGraphMap<&str, CountType>) {
     let reversed_graph = petgraph::visit::Reversed(input);
     let dfs = petgraph::visit::Dfs::new(reversed_graph, "shiny gold");
     println!("Count = {}", dfs.iter(reversed_graph).count() - 1); // -1 so we don't count shiny gold itself
 }
 
-pub fn part2(input: &DiGraphMap<&str, usize>) {
+pub fn part2(input: &DiGraphMap<&str, CountType>) {
     let reversed_graph = petgraph::visit::Reversed(input);
     let topo = petgraph::visit::Topo::new(reversed_graph);
     let mut bag_counts = HashMap::new();
     for node in topo.iter(reversed_graph) {
-        let inner_bags: usize = input
+        let inner_bags: CountType = input
             .edges(node)
             .map(|(_, neighbor, neighbor_count)| {
                 // neighbor_count represents how many of 'neighbor' bags this node holds
@@ -82,4 +84,23 @@ pub fn part2(input: &DiGraphMap<&str, usize>) {
         bag_counts.insert(node, inner_bags);
     }
     println!("Count = {}", bag_counts.get("shiny gold").unwrap());
+}
+
+pub fn generate_bad_case_for_non_dynamic_programming_solution() {
+    println!("shiny gold bags contain 1 A a bag, 1 A b bag.");
+    ('A'..='Z')
+        .chain('a'..='z')
+        .collect::<Vec<_>>()
+        .windows(2)
+        .for_each(|cs| {
+            for color in 'a'..='b' {
+                println!(
+                    "{} {} bags contain 1 {} a bag, 1 {} b bag.",
+                    cs[0], color, cs[1], cs[1]
+                );
+            }
+        });
+    for color in 'a'..='b' {
+        println!("z {} bags contain no other bags.", color);
+    }
 }

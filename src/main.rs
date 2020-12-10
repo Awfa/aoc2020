@@ -35,5 +35,6 @@ fn main() -> Result<(), Error> {
     let input = day7::input(&input).unwrap();
     day7::part1(&input);
     day7::part2(&input);
+
     Ok(())
 }
