@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use anyhow::anyhow;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
@@ -8,7 +9,7 @@ use nom::{
     sequence::{preceded, terminated},
 };
 use petgraph::graphmap::DiGraphMap;
-use petgraph::visit::{IntoNeighbors, Walker};
+use petgraph::visit::Walker;
 
 #[derive(Debug)]
 struct Insides<'a> {
@@ -40,13 +41,11 @@ fn get_color(input: &str) -> nom::IResult<&str, &str> {
     Ok((rest, color))
 }
 
-use anyhow::anyhow;
-
 pub fn input(input: &str) -> Result<DiGraphMap<&str, usize>, anyhow::Error> {
     let mut graph = DiGraphMap::new();
 
     for line in input.lines() {
-        let (rest, color) = get_color(line).map_err(|e| anyhow!("{}", e.to_string()))?;
+        let (rest, color) = get_color(line).map_err(|e| anyhow!("{}", e))?;
         graph.add_node(color);
 
         let mut inside_iterator =
@@ -71,14 +70,16 @@ pub fn part2(input: &DiGraphMap<&str, usize>) {
     let topo = petgraph::visit::Topo::new(reversed_graph);
     let mut bag_counts = HashMap::new();
     for node in topo.iter(reversed_graph) {
-        let sum: usize = input
+        let inner_bags: usize = input
             .edges(node)
             .map(|(_, neighbor, neighbor_count)| {
+                // neighbor_count represents how many of 'neighbor' bags this node holds
+                // we also add on the amount of bags the 'neighbor' bag type holds (* how many of 'neighbor' bags the node holds)
                 neighbor_count
                     + neighbor_count * bag_counts.get(neighbor).cloned().unwrap_or_default()
             })
             .sum();
-        bag_counts.insert(node, sum);
+        bag_counts.insert(node, inner_bags);
     }
-    println!("Count = {}", bag_counts.get("shiny gold").unwrap())
+    println!("Count = {}", bag_counts.get("shiny gold").unwrap());
 }
